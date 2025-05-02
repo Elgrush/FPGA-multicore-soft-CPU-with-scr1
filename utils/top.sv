@@ -1,5 +1,3 @@
-`include "top/includer.sv"
-
 module top(
     GPIO_0, GPIO_1,
     SW, KEY, LEDR, LEDG,

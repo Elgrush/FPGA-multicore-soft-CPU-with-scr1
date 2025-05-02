@@ -1,0 +1,1 @@
+Warning (10268): Verilog HDL information at packet_collector.sv(49): always construct contains both blocking and non-blocking assignments File: E:/CodingSpace/FPGA-multicore-soft-CPU-with-scr1/converters/packet_collector.sv Line: 49

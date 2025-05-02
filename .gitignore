@@ -1,2 +1,4 @@
 *.qws
+*.bak
+incremental_db
 db

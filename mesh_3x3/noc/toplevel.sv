@@ -1,7 +1,7 @@
 `include "mesh_3x3/inc/noc.svh"
 `include "mesh_3x3/inc/noc_XY.svh"
 `include "mesh_3x3/noc/noc.sv"
-`include "cores/src/cpu_with_ram.sv"
+//`include "cores/src/cpu_with_ram.sv"
 
 module toplevel (
     input clk, rst_n
@@ -22,7 +22,7 @@ module toplevel (
 
                 assign core_availability_signals_out[i][j] = 1; 
 
-                if (1)
+                /*if (1)
                 begin
                     cpu_with_ram #(
                         .NODE_ID(i * `Y + j)
@@ -36,6 +36,7 @@ module toplevel (
                 begin
                     assign core_outputs[i][j] = 0;
                 end
+					 */
 
             end
         end
