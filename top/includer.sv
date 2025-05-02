@@ -5,7 +5,7 @@
 `include "../converters/packet_collector.sv"
 `include "../converters/splitter.sv"
 
-//Including core
+//Including core pipeline
 `include "../scr1/src/core/pipeline/scr1_ipic.sv"
 `include "../scr1/src/core/pipeline/scr1_pipe_csr.sv"
 `include "../scr1/src/core/pipeline/scr1_pipe_exu.sv"
@@ -18,6 +18,19 @@
 `include "../scr1/src/core/pipeline/scr1_pipe_tdu.sv"
 `include "../scr1/src/core/pipeline/scr1_pipe_top.sv"
 `include "../scr1/src/core/pipeline/scr1_tracelog.sv"
+
+//Including core top
+`include "../scr1/src/core/scr1_core_top.sv"
+
+//Include core primitives
+`include "../scr1/src/core/primitives/scr1_cg.sv"
 `include "../scr1/src/core/primitives/scr1_reset_cells.sv"
 
-`include "../scr1/src/core/scr1_core_top.sv"
+//Including core reqs
+`include "../scr1/src/core/scr1_clk_ctrl.sv"
+`include "../scr1/src/core/scr1_dm.sv"
+`include "../scr1/src/core/scr1_dmi.sv"
+`include "../scr1/src/core/scr1_scu.sv"
+`include "../scr1/src/core/scr1_tapc.sv"
+`include "../scr1/src/core/scr1_tapc_shift_reg.sv"
+`include "../scr1/src/core/scr1_tapc_synchronizer.sv"
