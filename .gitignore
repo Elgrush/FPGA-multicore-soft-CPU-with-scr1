@@ -1,4 +1,6 @@
 *.qws
 *.bak
-incremental_db
+
 db
+incremental_db
+output_files
