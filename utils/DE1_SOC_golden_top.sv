@@ -31,14 +31,12 @@
 //Date:  Thu Jul 11 11:26:45 2013
 // ============================================================================
 
-`include "top/includer.sv"
-
 `define ENABLE_ADC
 `define ENABLE_AUD
 `define ENABLE_CLOCK2
 `define ENABLE_CLOCK3
 `define ENABLE_CLOCK4
-`define ENABLE_CLOCK 1
+`define ENABLE_CLOCK
 `define ENABLE_DRAM
 `define ENABLE_FAN
 `define ENABLE_FPGA
@@ -46,14 +44,14 @@
 `define ENABLE_HEX
 //`define ENABLE_HPS
 `define ENABLE_IRDA
-`define ENABLE_KEY 1
-`define ENABLE_LEDR 1
+`define ENABLE_KEY
+`define ENABLE_LEDR
 `define ENABLE_PS2
-`define ENABLE_SW 1
+`define ENABLE_SW
 `define ENABLE_TD
 `define ENABLE_VGA
 
-module top(
+module DE1_SOC_golden_top(
 
       /* Enables ADC - 3.3V */
 	`ifdef ENABLE_ADC
