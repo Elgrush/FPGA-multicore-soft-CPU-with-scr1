@@ -12,12 +12,16 @@
 `include "../scr1/src/core/pipeline/scr1_pipe_hdu.sv"
 `include "../scr1/src/core/pipeline/scr1_pipe_ialu.sv"
 `include "../scr1/src/core/pipeline/scr1_pipe_idu.sv"
-`include "../scr1/src/core/pipeline/scr1_pipe_ifu.sv"
-`include "../scr1/src/core/pipeline/scr1_pipe_lsu.sv"
+//`include "../scr1/src/core/pipeline/scr1_pipe_ifu.sv"
+//`include "../scr1/src/core/pipeline/scr1_pipe_lsu.sv"
 `include "../scr1/src/core/pipeline/scr1_pipe_mprf.sv"
 `include "../scr1/src/core/pipeline/scr1_pipe_tdu.sv"
 `include "../scr1/src/core/pipeline/scr1_pipe_top.sv"
 `include "../scr1/src/core/pipeline/scr1_tracelog.sv"
+
+//Including core custom pipeline
+`include "../core_addons/scr1_pipe_ifu.sv"
+`include "../core_addons/scr1_pipe_lsu.sv"
 
 //Including core top
 `include "../scr1/src/core/scr1_core_top.sv"
