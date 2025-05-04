@@ -18,12 +18,41 @@ module core_router #(
     output type_scr1_mem_resp_e                 dmem2lsu_resp_o             // Data memory response
 
     //Network integration
-    input[0:`PL-1] inputs[0:`REN-1], output[0:`PL-1] outputs[0:`REN-1],
-    input signals_in[0:`REN-1], output signals_out[0:`REN-1],
-    input[`CS-1:0] router_X, input[`CS-1:0] router_Y
+    input logic [1 + 2*$clog2(NODE_COUNT) + 17 + PACKET_ID_WIDTH - 1 + 2 : 0] flitIn,
+    output logic readFromNoc,
+
+    output logic [1 + 2*$clog2(NODE_COUNT) + 17 + PACKET_ID_WIDTH - 1 + 2 : 0] flitOut,
+    input logic writeToNoc
 
 );
 
-//TODO
-    
+    //TODO
+    splitter #(
+            .NODE_ID(NODE_ID), .NODE_COUNT(NODE_COUNT), .QUEUE_DEPTH(SPLITTER_DEPTH), .PACKET_ID_WIDTH(PACKET_ID_WIDTH)
+        ) spl (
+            .clk(clk), .ce(1'b1), .rst_n(rst_n),
+            .packet_in(packetOut),
+            .node_dest(nodeDest),
+            .valid_in(validControllerSplitter),
+            .packet_id(packetId),
+            .output_data(flitOut),
+            .valid_out(), .ack(dmem2lsu_req_ack_o)
+        );
+
+        packet_collector #( 
+            .NODE_COUNT(NODE_COUNT), .PACKET_ID_WIDTH(PACKET_ID_WIDTH), .BUFFER_SIZE(COLLECTOR_DEPTH)
+        ) pc (
+            .clk(clk), .rst_n(rst_n), .ce(1'b1),
+            .input_data(flitIn),
+            .valid_in(1'b1),
+
+            .valid_out(validCollectorRam),
+            .packet_out(packetIn),
+            .node_start_out(nodeStart),
+            .node_dest_out(),
+            .packet_id_out(),
+            .send_signal(readFromCollector)
+        );
+ 
+
 endmodule
