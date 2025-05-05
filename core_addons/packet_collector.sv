@@ -41,7 +41,7 @@ module packet_collector #(
     wire [ID_W-1:0]                 packet_id;
     wire [NODE_W-1:0]               node_start;
 
-    assign {valid_bit, node_dest, byte_index, data_byte, packet_id, node_start} = input_data;
+    assign {valid_bit, node_dest, data_byte, packet_id, node_start, byte_index} = input_data;
     
     integer i, j;
     logic [$clog2(BUFFER_SIZE):0] match_index, replace_index;
