@@ -42,7 +42,14 @@ endgenerate
 assign node_dest_encoded = NOC_ADDRESSES[node_dest];
 
 //Acknowledge signal
-assign ack = &{rst_n, valid_in, count < QUEUE_DEPTH};
+always_ff @(posedge clk or negedge rst_n) begin
+    if (!rst_n) begin
+        ack <= 0;
+    end
+    else begin
+        ack <= &{rst_n, valid_in, count < QUEUE_DEPTH};
+    end
+end
 
 always_ff @(posedge clk or negedge rst_n) begin
     if (!rst_n) begin
@@ -53,7 +60,7 @@ always_ff @(posedge clk or negedge rst_n) begin
         valid_out <= 0;
         output_data <= 0;
     end else if (ce) begin
-        if (ack) begin
+        if (&{rst_n, valid_in, count < QUEUE_DEPTH}) begin
             queue[tail] <= packet_in;
             node_queue[tail] <= node_dest_encoded;
             id_queue[tail]   <= packet_id;   
@@ -69,7 +76,7 @@ always_ff @(posedge clk or negedge rst_n) begin
             //In and out simultaneously
             if(byte_counter == FLIT_COUNT - 1) begin
                 head <= (head == QUEUE_DEPTH - 1) ? 0 : head + 1;
-                count <= count - !ack;
+                count <= count - !&{rst_n, valid_in, count < QUEUE_DEPTH};
             end
 
             valid_out <= 1;
