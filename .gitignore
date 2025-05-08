@@ -1,5 +1,7 @@
 *.qws
 *.bak
+*.bkp
+*.dtmp
 
 db
 incremental_db
