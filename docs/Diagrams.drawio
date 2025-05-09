@@ -512,6 +512,9 @@
         <mxCell id="65ibRO84xYBjDSUnrlQo-52" value="imemctr2col_req" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" vertex="1" parent="1">
           <mxGeometry x="364" y="850" width="160" height="30" as="geometry" />
         </mxCell>
+        <mxCell id="65ibRO84xYBjDSUnrlQo-55" value="NoC" style="whiteSpace=wrap;html=1;aspect=fixed;fillColor=none;fontSize=30;" vertex="1" parent="1">
+          <mxGeometry x="990.4" y="840" width="590" height="590" as="geometry" />
+        </mxCell>
       </root>
     </mxGraphModel>
   </diagram>

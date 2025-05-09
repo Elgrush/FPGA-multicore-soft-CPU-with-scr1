@@ -73,11 +73,11 @@ module core_router #(
     input logic writeToNoc
 );
 
-    localparam FLIT_PAYLOAD = $max(
-        ($size(type_scr1_mem_cmd_e) + $size(type_scr1_mem_width_e) + SCR1_DMEM_AWIDTH + SCR1_DMEM_DWIDTH),  // Memory       request
-        ($size(type_scr1_mem_resp_e) + SCR1_DMEM_DWIDTH),                                                   // Memory       response
-        ($size(type_scr1_mem_cmd_e) + SCR1_IMEM_AWIDTH),                                                    // Instruction  request
-        ($size(type_scr1_mem_resp_e) + SCR1_IMEM_DWIDTH)                                                    // Instruction  response
+    localparam FLIT_MAX_PAYLOAD = $max(
+        ($size(type_packet_type) + $size(type_scr1_mem_width_e) + SCR1_DMEM_AWIDTH + SCR1_DMEM_DWIDTH),  // Memory       request
+        ($size(type_packet_type) + $size(type_scr1_mem_width_e) + SCR1_DMEM_DWIDTH),                     // Memory       response
+        ($size(type_packet_type) + SCR1_IMEM_AWIDTH),                                                    // Instruction  request
+        ($size(type_packet_type) + SCR1_IMEM_DWIDTH)                                                     // Instruction  response
     ) 
     localparam INPUT_WIDTH = 1 + 2*$clog2(NODE_COUNT) + FLIT_PAYLOAD + PACKET_ID_WIDTH;
     
@@ -112,20 +112,8 @@ module core_router #(
             internal_memory_data_address <= '0;
         end else begin
             if(lsu2dmem_addr_i >= START_MEMORY_ADDRESS & su2dmem_addr_i <= END_MEMORY_ADDRESS) begin
-                //Memory hit
-                /*
-                typedef enum logic [SCR1_LSU_CMD_WIDTH_E-1:0] {
-                SCR1_LSU_CMD_NONE = '0,
-                SCR1_LSU_CMD_LB,
-                SCR1_LSU_CMD_LH,
-                SCR1_LSU_CMD_LW,
-                SCR1_LSU_CMD_LBU,
-                SCR1_LSU_CMD_LHU,
-                SCR1_LSU_CMD_SB,
-                SCR1_LSU_CMD_SH,
-                SCR1_LSU_CMD_SW
-                } type_scr1_lsu_cmd_sel_e;
-                */
+                //Memory hit TODO
+                
             end
         end
     end
