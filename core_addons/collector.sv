@@ -1,4 +1,4 @@
-module packet_collector #( 
+module collector #( 
     parameter int NODE_COUNT = 8, PACKET_ID_WIDTH = 5,
     BUFFER_SIZE = 8,
     PAYLOAD = 32, FLIT_PAYLOAD = 8) (
