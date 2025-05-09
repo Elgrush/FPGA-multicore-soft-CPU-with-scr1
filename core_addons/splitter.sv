@@ -3,7 +3,7 @@
 
 module splitter #(
     parameter int NODE_ID = 0, NODE_COUNT = 8, PACKET_ID_WIDTH = 5,
-    QUEUE_DEPTH = 8, INPUT_WIDTH = 100,
+    QUEUE_DEPTH = 8, INPUT_WIDTH = 31,
     MAX_PAYLOAD = 64, FLIT_PAYLOAD = 8,
     BYTE = 8,
     X = 3, Y = 3) (
@@ -70,7 +70,7 @@ logic [$clog2(NODE_COUNT) - 1 : 0] node_dest_encoded;
 logic [MAX_PAYLOAD - 1 : 0] queue [0 : QUEUE_DEPTH - 1];
 logic [$clog2(NODE_COUNT) - 1 : 0] node_queue [0 : QUEUE_DEPTH - 1];  
 logic [PACKET_ID_WIDTH - 1 : 0] id_queue [0 : QUEUE_DEPTH - 1];
-logic [$clog2(FLIT_COUNT) - 1 : 0] byte_counter;
+logic [FLIT_COUNT_MAX_WIDTH - 1 : 0] byte_counter;
 logic [$clog2(QUEUE_DEPTH) - 1 : 0] head, tail; 
 logic [$clog2(QUEUE_DEPTH) : 0] count; 
 logic [$clog2(NODE_COUNT) - 1 : 0] node_in;
@@ -136,7 +136,7 @@ always_ff @(posedge clk or negedge rst_n) begin
 
         if (count > 0) begin
             if(packet_type == DMEM_REQ_READ | DMEM_REQ_WRITE)
-                output_data <= {1'b1, node_queue[head], mem_width, {FLIT_PAYLOAD{1'b0}}, id_queue[head], node_in, byte_counter};
+                output_data <= {1'b1, node_queue[head], packet_type, mem_width, {FLIT_PAYLOAD{1'b0}}, id_queue[head], node_in, byte_counter};
             else
                 output_data <= {1'b1, node_queue[head], packet_type, {FLIT_PAYLOAD{1'b0}}, id_queue[head], node_in, byte_counter};
             for(i=0; i < FLIT_PAYLOAD; i = i + 1)
