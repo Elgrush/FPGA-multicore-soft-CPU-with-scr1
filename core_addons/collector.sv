@@ -1,32 +1,69 @@
+`include "packet_type.svh"
+`include "scr1_memif.svh"   //For data widths
+
 module collector #( 
     parameter int NODE_COUNT = 8, PACKET_ID_WIDTH = 5,
-    BUFFER_SIZE = 8,
-    PAYLOAD = 32, FLIT_PAYLOAD = 8) (
+    BUFFER_SIZE = 8, INPUT_WIDTH = 31,
+    MAX_PAYLOAD = 32, FLIT_PAYLOAD = 8,
+    BYTE = 8
+    ) (
         
     input  logic                                clk, rst_n, ce,
     input  logic [INPUT_WIDTH - 1 : 0]          input_data,
     input  logic                                valid_in,
 
     output logic                                valid_out,
-    output logic [PAYLOAD - 1:0]                packet_out,
+    output logic [MAX_PAYLOAD - 1:0]            packet_out,
     output logic [$clog2(NODE_COUNT) - 1:0]     node_start_out,
     output logic [$clog2(NODE_COUNT) - 1:0]     node_dest_out,
     output logic [PACKET_ID_WIDTH - 1:0]        packet_id_out,
+    output type_packet_type                     packet_type_out,
+    output type_scr1_mem_width_e                mem_width_out,
     input  logic                                send_signal
 );
 
     localparam int NODE_W = $clog2(NODE_COUNT);
-    localparam int ID_W   = PACKET_ID_WIDTH;
-    localparam int FLIT_COUNT = PAYLOAD / FLIT_PAYLOAD + (PAYLOAD % FLIT_PAYLOAD != 0);
-    localparam int INPUT_WIDTH = 1 + 2*$clog2(NODE_COUNT) + FLIT_PAYLOAD + PACKET_ID_WIDTH; 
+
+    localparam FLIT_COUNT_MAX_WIDTH = $clog2(MAX_PAYLOAD / FLIT_PAYLOAD + (MAX_PAYLOAD % FLIT_PAYLOAD != 0));
+    logic [FLIT_COUNT_MAX_WIDTH - 1 : 0] FLIT_AMENDMENT;
+
+    logic [FLIT_COUNT_MAX_WIDTH - 1 : 0] FLIT_COUNT_SINGLE      =    1;
+    logic [FLIT_COUNT_MAX_WIDTH - 1 : 0] FLIT_COUNT_BYTE_1      =    MAX_PAYLOAD / BYTE     + (MAX_PAYLOAD % (BYTE    ) != 0);
+    logic [FLIT_COUNT_MAX_WIDTH - 1 : 0] FLIT_COUNT_BYTE_2      =    MAX_PAYLOAD / BYTE * 2 + (MAX_PAYLOAD % (BYTE * 2) != 0);
+    logic [FLIT_COUNT_MAX_WIDTH - 1 : 0] FLIT_COUNT_BYTE_4      =    MAX_PAYLOAD / BYTE * 4 + (MAX_PAYLOAD % (BYTE * 4) != 0);
+    logic [FLIT_COUNT_MAX_WIDTH - 1 : 0] FLIT_COUNT_BYTE_5      =    MAX_PAYLOAD / BYTE * 5 + (MAX_PAYLOAD % (BYTE * 5) != 0);
+    logic [FLIT_COUNT_MAX_WIDTH - 1 : 0] FLIT_COUNT_BYTE_6      =    MAX_PAYLOAD / BYTE * 6 + (MAX_PAYLOAD % (BYTE * 6) != 0);
+    logic [FLIT_COUNT_MAX_WIDTH - 1 : 0] FLIT_COUNT_BYTE_8      =    MAX_PAYLOAD / BYTE * 8 + (MAX_PAYLOAD % (BYTE * 8) != 0);
+
+    logic FLIT_COUNT_MAX = FLIT_COUNT_BYTE_8;
+
+    //Computing flit count
+    always_comb begin
+        case (packet_type)
+            DMEM_RESP_WRITTEN, DMEM_RESP_BAD, IMEM_RESP_BAD :   FLIT_AMENDMENT = FLIT_COUNT_SINGLE; // 0 bytes
+            IMEM_REQ_READ, DMEM_REQ_READ, IMEM_RESP_DATA    :   FLIT_AMENDMENT = FLIT_COUNT_BYTE_4; // 4 byte address
+            //Handling IMEM responses
+            default : begin
+                case (mem_width)
+                    SCR1_MEM_WIDTH_BYTE                     :   FLIT_AMENDMENT = FLIT_COUNT_BYTE_5; // 4 byte address and 1 byte data
+                    SCR1_MEM_WIDTH_HWORD                    :   FLIT_AMENDMENT = FLIT_COUNT_BYTE_6; // 4 byte address and 2 byte data
+                    default:   // SCR1_MEM_WIDTH_WORD
+                                                                FLIT_AMENDMENT = FLIT_COUNT_BYTE_8; // 4 byte address and 4 byte data
+                endcase;
+            end
+        endcase
+    end
+
 
     typedef struct  {
-        logic [FLIT_PAYLOAD - 1:0] data[FLIT_COUNT];
-        logic [FLIT_COUNT - 1:0] received_mask;
-        logic [31:0] timestamp;
-        logic [NODE_W - 1:0] node_start;
-        logic [NODE_W - 1:0] node_dest;
-        logic [ID_W - 1:0] packet_id;
+        logic [FLIT_PAYLOAD - 1:0]      data[FLIT_COUNT];
+        logic [FLIT_COUNT_MAX - 1:0]        received_mask;
+        logic [31:0]                    timestamp;
+        logic [NODE_W - 1:0]            node_start;
+        logic [NODE_W - 1:0]            node_dest;
+        logic [PACKET_ID_WIDTH - 1:0]   packet_id;
+        type_packet_type                packet_type;
+        type_scr1_mem_width_e           mem_width;
         logic valid;
     } packet_entry_t;
 
@@ -35,14 +72,19 @@ module collector #(
 
     // Распаковка флита
     wire valid_bit;
-    wire [NODE_W-1:0]               node_dest;
-    wire [$clog2(FLIT_COUNT) - 1:0] byte_index;
-    wire [PAYLOAD-1:0]                     data_byte;
-    wire [ID_W-1:0]                 packet_id;
-    wire [NODE_W-1:0]               node_start;
+    wire [NODE_W-1:0]                          node_dest;
+    wire [$clog2(FLIT_COUNT) - 1:0]            byte_index;
+    wire [PAYLOAD-1:0]                         data_byte;
+    wire [PACKET_ID_WIDTH-1:0]                 packet_id;
+    wire [NODE_W-1:0]                          node_start;
+    type_packet_type                           packet_type;
+    type_scr1_mem_width_e                      mem_width;
 
-    assign {valid_bit, node_dest, data_byte, packet_id, node_start, byte_index} = input_data;
-    
+    // Tepacking flit
+    assign {valid_bit, node_dest, packet_type, mem_width, data_byte, packet_id, node_start, byte_index} = input_data;
+
+    // TODO Count the amendment
+
     integer i, j;
     logic [$clog2(BUFFER_SIZE):0] match_index, replace_index;
     logic match_found, free_found;
@@ -62,7 +104,7 @@ module collector #(
          
             if (send_signal) begin
                 for (i = 0; i < BUFFER_SIZE; i++) begin
-                    if (!valid_out && buffer[i].valid && (&buffer[i].received_mask))
+                    if (&{!valid_out, buffer[i].valid, (&buffer[i].received_mask)})
                     begin
                         valid_out <= 1;
                         packet_out <= {buffer[i].data[0], buffer[i].data[1],
