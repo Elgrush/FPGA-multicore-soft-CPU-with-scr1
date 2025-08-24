@@ -3,6 +3,7 @@
 
 `include "scr1_arch_description.svh"
 `include "scr1_memif.svh"
+`include "memory.svh"
 `include "noc_enable.svh"
 `include "noc.svh"
 `include "noc_XY.svh"
@@ -14,6 +15,10 @@ module core_perifery_top #(
     X = 3, Y = 3) (
     input   logic                                   rst_n,                  // Regular Reset signal
     input   logic                                   clk,                    // System clock
+
+    input   logic [SCR1_IRQ_LINES_NUM-1:0]          core_irq_lines_i,           // External interrupt request lines
+    input   logic                                   core_irq_soft_i,            // Software generated interrupt request
+    input   logic                                   core_irq_mtimer_i,          // Machine timer interrupt request
 
 `ifdef NOC_ENABLE
     // Collector
@@ -67,20 +72,9 @@ module core_perifery_top #(
     .test_rst_n(rst_n),             // Test mode's reset
     .clk(clk),                      // System clock
 
-`ifdef NOC_ENABLE
-    // Collector
-    .COL2ALU_valid_i(COL2ALU_valid),
-    .COL2ALU_packet_i(COL2ALU_packet),
-    .ALU2COL_send_signal_o(ALU2COL_send_signal),
-
-    // Splitter
-    .ALU2SPL_packet_o(ALU2SPL_packet),
-    .ALU2SPL_node_dest_o(ALU2SPL_node_dest),
-    .ALU2SPL_valid_o(ALU2SPL_valid),
-    .ALU2SPL_packet_id_o(ALU2SPL_packet_id),
-    .SPL2ALU_ready_i(SPL2ALU_ready),
-
-`endif // NOC_ENABLE
+    .core_irq_lines_i(core_irq_lines_i),             // External interrupt request
+    .core_irq_soft_i(core_irq_soft_i),            // Software generated interrupt request
+    .core_irq_mtimer_i(core_irq_mtimer_i),          // Machine timer interrupt request
 
     // Instruction Memory Interface
     .imem2core_req_ack_i(imem2core_req_ack_i),

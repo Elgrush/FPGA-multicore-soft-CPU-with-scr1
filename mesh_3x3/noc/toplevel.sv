@@ -4,13 +4,16 @@
 `include "queue.svh"
 `include "router.svh"
 `include "scr1_arch_description.svh"
+`include "scr1_memif.svh"
 
 module toplevel (
     input clk, rst_n,
-	 
-	 input ext_irq,
-	 
-	 // Instruction Memory Interface
+	
+    input   logic [SCR1_IRQ_LINES_NUM-1:0]          core_irq_lines_i[`Y-1:0][`X-1:0],           // External interrupt request lines
+    input   logic                                   core_irq_soft_i[`Y-1:0][`X-1:0],            // Software generated interrupt request
+    input   logic                                   core_irq_mtimer_i[`Y-1:0][`X-1:0],          // Machine timer interrupt request
+	
+    // Instruction Memory Interface
     input   logic                                   imem2core_req_ack_i[`Y-1:0][`X-1:0],        // IMEM request acknowledge
     output  logic                                   core2imem_req_o[`Y-1:0][`X-1:0],            // IMEM request
     output  type_scr1_mem_cmd_e                     core2imem_cmd_o[`Y-1:0][`X-1:0],            // IMEM command
@@ -53,27 +56,29 @@ module toplevel (
                     .clk(clk), .rst_n(rst_n),
                     .input_data(core_inputs[i][j]),
                     .output_data(core_outputs[i][j]),
-                    .ext_irq(ext_irq),
                     .network_ready(core_availability_signals_in[i][j]),
-						  
-						  
-						 // Instruction Memory Interface
-						 .imem2core_req_ack_i(imem2core_req_ack_i [i][j]),
-						 .core2imem_req_o(core2imem_req_o [i][j]),
-						 .core2imem_cmd_o(core2imem_cmd_o [i][j]),
-						 .core2imem_addr_o(core2imem_addr_o [i][j]),
-						 .imem2core_rdata_i(imem2core_rdata_i [i][j]),
-						 .imem2core_resp_i(imem2core_resp_i [i][j]),
 
-						 // Data Memory Interface
-						 .dmem2core_req_ack_i(dmem2core_req_ack_i [i][j]),
-						 .core2dmem_req_o(core2dmem_req_o [i][j]),
-						 .core2dmem_cmd_o(core2dmem_cmd_o [i][j]),
-						 .core2dmem_width_o(core2dmem_width_o [i][j]),
-						 .core2dmem_addr_o(core2dmem_addr_o [i][j]),
-						 .core2dmem_wdata_o(core2dmem_wdata_o [i][j]),
-						 .dmem2core_rdata_i(dmem2core_rdata_i [i][j]),
-						 .dmem2core_resp_i(dmem2core_resp_i [i][j])
+                    .core_irq_lines_i(core_irq_lines_i[i][j]),             // External interrupt request
+                    .core_irq_soft_i(core_irq_soft_i[i][j]),            // Software generated interrupt request
+                    .core_irq_mtimer_i(core_irq_mtimer_i[i][j]),          // Machine timer interrupt request
+						  
+                    // Instruction Memory Interface
+                    .imem2core_req_ack_i(imem2core_req_ack_i [i][j]),
+                    .core2imem_req_o(core2imem_req_o [i][j]),
+                    .core2imem_cmd_o(core2imem_cmd_o [i][j]),
+                    .core2imem_addr_o(core2imem_addr_o [i][j]),
+                    .imem2core_rdata_i(imem2core_rdata_i [i][j]),
+                    .imem2core_resp_i(imem2core_resp_i [i][j]),
+
+                    // Data Memory Interface
+                    .dmem2core_req_ack_i(dmem2core_req_ack_i [i][j]),
+                    .core2dmem_req_o(core2dmem_req_o [i][j]),
+                    .core2dmem_cmd_o(core2dmem_cmd_o [i][j]),
+                    .core2dmem_width_o(core2dmem_width_o [i][j]),
+                    .core2dmem_addr_o(core2dmem_addr_o [i][j]),
+                    .core2dmem_wdata_o(core2dmem_wdata_o [i][j]),
+                    .dmem2core_rdata_i(dmem2core_rdata_i [i][j]),
+                    .dmem2core_resp_i(dmem2core_resp_i [i][j])
  
                 );
 
