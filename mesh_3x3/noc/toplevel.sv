@@ -1,14 +1,39 @@
-`include "mesh_3x3/inc/noc.svh"
-`include "mesh_3x3/inc/noc_XY.svh"
-`include "mesh_3x3/noc/noc.sv"
-//`include "cores/src/cpu_with_ram.sv"
+`include "noc_enable.svh"
+`include "noc.svh"
+`include "noc_XY.svh"
+`include "queue.svh"
+`include "router.svh"
+`include "scr1_arch_description.svh"
 
 module toplevel (
-    input clk, rst_n
+    input clk, rst_n,
+	 
+	 input ext_irq,
+	 
+	 // Instruction Memory Interface
+    input   logic                                   imem2core_req_ack_i[`Y-1:0][`X-1:0],        // IMEM request acknowledge
+    output  logic                                   core2imem_req_o[`Y-1:0][`X-1:0],            // IMEM request
+    output  type_scr1_mem_cmd_e                     core2imem_cmd_o[`Y-1:0][`X-1:0],            // IMEM command
+    output  logic [`SCR1_IMEM_AWIDTH-1:0]           core2imem_addr_o[`Y-1:0][`X-1:0],           // IMEM address
+    input   logic [`SCR1_IMEM_DWIDTH-1:0]           imem2core_rdata_i[`Y-1:0][`X-1:0],          // IMEM read data
+    input   type_scr1_mem_resp_e                    imem2core_resp_i[`Y-1:0][`X-1:0],           // IMEM response
+
+    // Data Memory Interface
+    input   logic                                   dmem2core_req_ack_i[`Y-1:0][`X-1:0],        // DMEM request acknowledge
+    output  logic                                   core2dmem_req_o[`Y-1:0][`X-1:0],            // DMEM request
+    output  type_scr1_mem_cmd_e                     core2dmem_cmd_o[`Y-1:0][`X-1:0],            // DMEM command
+    output  type_scr1_mem_width_e                   core2dmem_width_o[`Y-1:0][`X-1:0],          // DMEM data width
+    output  logic [`SCR1_DMEM_AWIDTH-1:0]           core2dmem_addr_o[`Y-1:0][`X-1:0],           // DMEM address
+    output  logic [`SCR1_DMEM_DWIDTH-1:0]           core2dmem_wdata_o[`Y-1:0][`X-1:0],          // DMEM write data
+    input   logic [`SCR1_DMEM_DWIDTH-1:0]           dmem2core_rdata_i[`Y-1:0][`X-1:0],          // DMEM read data
+    input   type_scr1_mem_resp_e                    dmem2core_resp_i[`Y-1:0][`X-1:0]            // DMEM response
+
 );
 
     wire core_availability_signals_out[0:`Y-1][0:`X-1];
-    wire[$clog2(9)-1:0] node_start_out[0:`Y-1][0:`X-1];
+    wire core_availability_signals_in[0:`Y-1][0:`X-1];
+    wire[$clog2(`NOC_NODE_COUNT)-1:0] node_start_out[0:`Y-1][0:`X-1];
+    wire[$clog2(`NOC_NODE_COUNT)-1:0] node_start_in[0:`Y-1][0:`X-1];
     wire[0:`PL-1] core_inputs[0:`Y-1][0:`X-1];
     wire[0:`PL-1] core_outputs[0:`Y-1][0:`X-1];
 
@@ -22,21 +47,35 @@ module toplevel (
 
                 assign core_availability_signals_out[i][j] = 1; 
 
-                /*if (1)
-                begin
-                    cpu_with_ram #(
-                        .NODE_ID(i * `Y + j)
-                    ) core (
-                        .clk(clk), .rst_n(rst_n),
-                        .flitIn(core_inputs[i][j]),
-                        .flitOut(core_outputs[i][j])
-                    );
-                end
-                else
-                begin
-                    assign core_outputs[i][j] = 0;
-                end
-					 */
+                core_perifery_top #(
+                    .NODE_ID(i * `Y + j), .X(j), .Y(i)
+                ) core (
+                    .clk(clk), .rst_n(rst_n),
+                    .input_data(core_inputs[i][j]),
+                    .output_data(core_outputs[i][j]),
+                    .ext_irq(ext_irq),
+                    .network_ready(core_availability_signals_in[i][j]),
+						  
+						  
+						 // Instruction Memory Interface
+						 .imem2core_req_ack_i(imem2core_req_ack_i [i][j]),
+						 .core2imem_req_o(core2imem_req_o [i][j]),
+						 .core2imem_cmd_o(core2imem_cmd_o [i][j]),
+						 .core2imem_addr_o(core2imem_addr_o [i][j]),
+						 .imem2core_rdata_i(imem2core_rdata_i [i][j]),
+						 .imem2core_resp_i(imem2core_resp_i [i][j]),
+
+						 // Data Memory Interface
+						 .dmem2core_req_ack_i(dmem2core_req_ack_i [i][j]),
+						 .core2dmem_req_o(core2dmem_req_o [i][j]),
+						 .core2dmem_cmd_o(core2dmem_cmd_o [i][j]),
+						 .core2dmem_width_o(core2dmem_width_o [i][j]),
+						 .core2dmem_addr_o(core2dmem_addr_o [i][j]),
+						 .core2dmem_wdata_o(core2dmem_wdata_o [i][j]),
+						 .dmem2core_rdata_i(dmem2core_rdata_i [i][j]),
+						 .dmem2core_resp_i(dmem2core_resp_i [i][j])
+ 
+                );
 
             end
         end
@@ -48,7 +87,9 @@ module toplevel (
         .clk(clk), .rst_n(rst_n),
         .core_inputs(core_inputs),
         .core_outputs(core_outputs),
-        .core_availability_signals_out(core_availability_signals_out)
+        .core_availability_signals_out(core_availability_signals_out),
+        .core_availability_signals_in(core_availability_signals_in)
     );
+
     
 endmodule

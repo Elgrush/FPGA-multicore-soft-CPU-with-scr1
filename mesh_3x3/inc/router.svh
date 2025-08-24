@@ -4,6 +4,6 @@
 `include "mesh_3x3/inc/noc.svh"
 
 `define REN 5 // number of router entries
-`define REN_B 3 // number bits required to eoncode router entries
+`define REN_B 2 // number bits required to encode router entries
 
 `endif

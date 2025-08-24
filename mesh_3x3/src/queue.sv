@@ -1,4 +1,6 @@
-`include "mesh_3x3/inc/queue.svh"
+`include "noc.svh"
+`include "router.svh"
+`include "queue.svh"
 
 module queue (
     input clk, rst_n,
@@ -11,7 +13,7 @@ module queue (
 
     integer i;
 
-    reg[0:`PL-1] queue_buffers[0:`EN-1] /* synthesis ramstyle = "logic" */;
+    reg[0:`PL-1] queue_buffers[0:`EN-1];
     reg[`EN_B:0] ptr_write = 0;
     reg[`EN_B:0] ptr_read = 0;
     reg empty_flag = 1;
@@ -21,9 +23,10 @@ module queue (
 
     always @(posedge clk or negedge rst_n)
     begin
+			i = 0;
         if (!rst_n)
         begin
-            for (i = 0; i < `EN; i++)
+            for (i = 0; i < `EN; i = i + 1)
             begin
                 queue_buffers[i] <= 0;
             end

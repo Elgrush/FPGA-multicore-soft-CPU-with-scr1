@@ -1,7 +1,3 @@
-`include "mesh_3x3/inc/noc.svh"
-`include "mesh_3x3/inc/noc_XY.svh"
-`include "mesh_3x3/src/router.sv"
-
 module noc(
     input clk,
     input rst_n,
