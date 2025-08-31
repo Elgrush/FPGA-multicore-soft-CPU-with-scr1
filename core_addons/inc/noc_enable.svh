@@ -1,5 +1,5 @@
 `ifndef NOC_ENABLE
-`define NOC_ENABLE 1
+`define NOC_ENABLE
 
 // NoC
 `define NOC_NODE_COUNT 			8
