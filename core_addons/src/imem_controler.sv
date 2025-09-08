@@ -2,7 +2,7 @@
 `include "memory.svh"
 `include "AXI.svh"
 
-module imem_controler (
+module imem_controler #(parameter NODE_ID = 0)(
     input clk, rst_n,
 
     // RAM access
@@ -31,73 +31,26 @@ module imem_controler (
 
 );
 
-    logic   has_request_in_work;
-    TDATA_REQ   request_in_work;
-    
-    logic  has_response_in_work;
-    TDATA_RESP response_in_work;
+	enum {AXI_FSM_IDLE, AXI_FSM_ADDRESS, AXI_FSM_MEMORY, AXI_FSM_WRITE_RESPONCE} axi_fsm_state, axi_fsm_state_next;
 
-    always_ff @( posedge clk or negedge rst_n ) begin: CoreInterfaceInput
+    always_ff @( posedge clk or negedge rst_n ) begin : StateSwitchBlock
         if(!rst_n) begin
-            imem2core_req_ack_o    <= '0;
-        end else if(!has_request_in_work && core2imem_req_i) begin
-            imem2core_req_ack_o  <= 1'b1;
-            has_request_in_work  <= 1'b1;
-            request_in_work.tData_command  <= core2imem_cmd_i;
-            request_in_work.tData_address <= core2imem_addr_i;
+            axi_fsm_state <= AXI_FSM_IDLE;
         end else begin
-            imem2core_req_ack_o <= 1'b0;
+            axi_fsm_state <= axi_fsm_state_next;
         end
-    end
+    end : StateSwitchBlock
 
-    always_ff @( posedge clk or negedge rst_n ) begin: CoreInterfaceOutput
+    always_ff @( posedge clk or negedge rst_n ) begin : NextStateBlock
         if(!rst_n) begin
-            imem2core_rdata_o      <= '0;
-            imem2core_resp_o       <= '0;
+            axi_fsm_state_next <= AXI_FSM_IDLE;
         end else begin
-            //TODO
+            axi_fsm_state_next <= axi_fsm_state;
+            case (axi_fsm_state)
+                : 
+                default: 
+            endcase
         end
-    end
-
-    always_ff @( posedge clk or negedge rst_n ) begin: AXIBlockInput
-        if(!rst_n) begin
-            tReady_o      <= '0;
-        end else begin
-            if(TPACKAGE.tPackageType == TREQUEST) begin
-                if(!has_request_in_work && !core2imem_req_i && tValid_i) begin
-                    has_request_in_work  <= 1'b1;
-                    request_in_work      <= tPackage_i.tData;
-                end
-            end else begin
-                if(!has_responce_in_work && tValid_i) begin
-                    has_responce_in_work  <= 1'b1;
-                    response_in_work      <= tPackage_i.tData;
-                end
-            end
-        end
-    end
-    
-    always_ff @( posedge clk or negedge rst_n ) begin: AXIBlockOutput
-        if(!rst_n) begin
-            tValid_o      <= '0;
-            TPACKAGE_o    <= '0;
-        end else begin
-            //TODO
-        end
-    end
-
-    always_ff @( posedge clk or negedge rst_n ) begin: RamBlock
-        if(!rst_n) begin
-            mem_we_o      <= '0;
-            mem_data_o    <= '0;
-            mem_addr_o    <= '0;
-        end else begin
-            //TODO
-        end
-    end
-
-
-    //Main Logic
-    // TODO
+    end : NextStateBlock
 
 endmodule : imem_controler

@@ -4,4 +4,6 @@
 `define RADDR_WIDTH 6
 `define RDATA_WIDTH 8
 
+parameter MEMORY_SHIFT_MASK = 4;
+
 `endif
